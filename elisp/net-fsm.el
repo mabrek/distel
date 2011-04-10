@@ -243,6 +243,7 @@ buffer."
   (setq fsm-state nil)
   (when fsm-process
     (set-process-sentinel fsm-process nil)
+    (process-kill-without-query fsm-process)
     (kill-buffer (process-buffer fsm-process))))
 
 (defun assert-fsm-invariants ()
