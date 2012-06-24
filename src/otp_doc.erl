@@ -15,7 +15,7 @@
          init/1, terminate/2, code_change/3]).
 %% --------------------------------------------------------------------------
 % API - these run in the shell
--export([start/0,stop/0]).
+-export([start/0,start/1,stop/0]).
 -export([distel/4,modules/1,functions/2,arguments/2]).
 -export([firefox/1,firefox/2,firefox/3]).
 -export([sig/1,sig/2,sig/3]).
@@ -238,6 +238,8 @@ cache_funcs(M) ->
 
 funcsf(Line,A,M) ->
   case trim_P(string:tokens(A++Line,"<>\"")) of
+    ["a name=",FA,"/a","span class=","bold_code",Sig,"/span"|_] ->  % R14
+      a_line(M,fa(FA),Sig),[];			% R12-
     ["a name=",FA,"span class=","bold_code",Sig,"/span","/a"|_] ->
       a_line(M,fa(FA),Sig),[];			% R12-
     ["A NAME=",FA,"STRONG","CODE",Sig,"/CODE","/STRONG","/A"|_] ->

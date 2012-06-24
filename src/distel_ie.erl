@@ -115,7 +115,7 @@ evaluate(String, {Defs, Line, Bindings}) ->
 	    case parse_form(String) of
 		{ok, Parse} -> 
 		    {ok, Name, Arity} = get_function_name(Parse),
-		    ets:insert(Defs, {Name, Parse}),
+		    ets:insert(Defs, {{Name,Arity}, Parse}),
 		    FunTrees = lists:flatten(
 				 lists:reverse(ets:match(Defs,{'_', '$1'}))),
 		    %% Line isn't really used yet
@@ -198,6 +198,17 @@ add_remote_call_info({integer, L, Value}, _Defs) ->
     {integer, L, Value} ;
 add_remote_call_info({string, L, String}, _Defs) ->
     {string, L, String} ;
+
+add_remote_call_info([{lc, L, Body, Gen}|Rs], Defs) ->
+    Bd = add_remote_call_info(Body, Defs),
+    Gn = add_remote_call_info(Gen, Defs),
+    [{lc, L, Bd, Gn}|add_remote_call_info(Rs,Defs)];
+add_remote_call_info([{generate, L, Var, Gen}|Gs], Defs) ->
+    Gn = add_remote_call_info(Gen, Defs),
+    [{generate, L, Var, Gn}|add_remote_call_info(Gs, Defs)];
+add_remote_call_info({call, L, {atom, L2, Name}, Body}, Defs) ->
+    hd(add_remote_call_info([{call, L, {atom, L2, Name}, Body}], Defs));
+
 add_remote_call_info([{call, L, {atom, L2, Name}, Body} | Rs], Defs) ->
     B = add_remote_call_info(Body, Defs),
     IsBuiltin = erlang:is_builtin(erlang, Name, length(B)),
